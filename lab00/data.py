@@ -23,16 +23,13 @@ class Random2DGaussian:
 
 
 def sample_gauss_2d(C, N):
-    Gs = []
-    Ys = []
+    X = []
+    y = []
     for i in range(C):
-        Gs.append(Random2DGaussian())
-        Ys.append(i)
+        X.extend(Random2DGaussian().get_sample(N))
+        y.extend([i]*N)
 
-    X = np.vstack([G.get_sample(N) for G in Gs])
-    Y_ = np.hstack([[Y]*N for Y in Ys])
-
-    return X, Y_
+    return np.array(X), np.array(y)
 
 
 def eval_perf_binary(Y, Y_):
@@ -49,7 +46,7 @@ def eval_perf_binary(Y, Y_):
 
 def eval_AP(Y):
     N = len(Y)
-    pos = sum(Y)
+    pos = np.sum(Y)
     neg = N - pos
 
     tp = pos
@@ -62,15 +59,15 @@ def eval_AP(Y):
     for x in Y:
         precision = tp / (tp + fp)
 
-        if x == 1:
+        if x:
             sumprec += precision
 
         tp -= x
         fn += x
-        fp -= 1 - x
-        tn += 1 - x
+        fp -= not x
+        tn += not x
 
-    return sumprec / pos
+    return (sumprec / pos)[0]
 
 
 def graph_data(X, Y_, Y):
@@ -90,7 +87,7 @@ def graph_data(X, Y_, Y):
                 marker='s', edgecolors=[0, 0, 0])
 
 
-def graph_surface(fun, rect, offset=0.5, width=400, height=400):
+def graph_surface(fun, rect, offset=0.5, width=800, height=800):
     X = np.linspace(rect[0][1], rect[1][1], width)
     Y = np.linspace(rect[0][0], rect[1][0], height)
     x0, x1 = np.meshgrid(Y, X)
@@ -98,10 +95,11 @@ def graph_surface(fun, rect, offset=0.5, width=400, height=400):
 
     vals = fun(grid).reshape((width, height))
 
-    delta = offset if offset else 0
-    maxval = max(np.max(vals) - delta, -(np.min(vals) - delta))
+    #delta = offset if offset else 0
+    #maxval = max(np.max(vals) - delta, -(np.min(vals) - delta))
 
-    plt.pcolormesh(x0, x1, vals, vmin=delta-maxval, vmax=delta+maxval)
+    plt.pcolormesh(x0, x1, vals, #vmin=delta-maxval, vmax=delta+maxval,
+                   cmap='jet')
 
     if offset is not None:
         plt.contour(x0, x1, vals, colors='black', levels=[offset])
@@ -114,3 +112,16 @@ if __name__ == '__main__':
     X = G.get_sample(100)
     plt.scatter(X[:, 0], X[:, 1])
     plt.show()
+
+
+def confusion_matrix(Y, Y_):
+    Cs = sorted(set(Y) | set(Y_))
+    C = len(Cs)
+    mat = np.zeros((C, C), dtype='int')
+    pairs = np.vstack((Y, Y_)).T
+
+    for i, Ci in Cs:
+        for j, Cj in Cs:
+            mat[i][j] = (pairs == (Ci, Cj)).all(axis=1).sum()
+    
+    return mat

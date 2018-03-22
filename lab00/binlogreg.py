@@ -10,12 +10,6 @@ def sigm(x):
     return 1 / (1 + np.exp(-x))
 
 
-def stable_softmax(x):
-    exp_x_shifted = np.exp(x - np.max(x))
-    probs = exp_x_shifted / np.sum(exp_x_shifted)
-    return probs
-
-
 def binlogreg_classify(X, w, b):
     return sigm(X.dot(w) + b)
 
@@ -60,14 +54,12 @@ if __name__ == '__main__':
     Y = [1 if prob > 0.5 else 0 for prob in probs]
 
     accuracy, recall, precision = data.eval_perf_binary(Y, Y_)
-    AP = data.eval_AP(Y_[probs.argsort()])
+    AP = data.eval_AP(Y_[probs.T.argsort()].T)
     print("accuracy: {}, recall: {}, precision: {}, AP: {}"
           .format(accuracy, recall, precision, AP))
 
-    print("{} {}".format(np.min(X, axis=0), np.max(X, axis=0)))
-
     rect = (np.min(X, axis=0), np.max(X, axis=0))
-    data.graph_surface(binlogreg_decfun(w, b), rect, offset=0)
+    data.graph_surface(binlogreg_decfun(w, b), rect)
     data.graph_data(X, Y_, Y)
 
     plt.show()
