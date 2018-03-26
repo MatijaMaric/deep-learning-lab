@@ -20,7 +20,7 @@ def logreg_train(X, Y_):
     # X ... N x D
     # Y ... N x C
 
-    W = np.random.randn(C, D) # D x C
+    W = np.random.randn(C, D) # C x D
     b = np.zeros(C) # 1 x C
 
     for i in range(0, param_niter):
