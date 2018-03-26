@@ -1,31 +1,43 @@
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
 
-X = tf.placeholder(tf.float32, [None])
-Y_ = tf.placeholder(tf.float32, [None])
+f = lambda x: x + 3
+
+N = 100
+Xs = np.random.uniform(-10, 10, N)
+Ys = f(Xs) + np.random.normal(0, 0.1, N)
+Xs, Ys = Xs.reshape(-1, 1), Ys.reshape(-1, 1)
+
+X  = tf.placeholder(tf.float32, [None, 1])
+Y_ = tf.placeholder(tf.float32, [None, 1])
 a = tf.Variable(0.0)
 b = tf.Variable(0.0)
 
-Y = a * X + b
+Y = a*X + b
+loss  = 1./(2*N) * (Y-Y_)**2
 
-loss = (Y-Y_)**2
-
-trainer = tf.train.GradientDescentOptimizer(0.1)
+trainer = tf.train.GradientDescentOptimizer(0.01)
 train_op = trainer.minimize(loss)
+grads = trainer.compute_gradients(loss, [a, b])
+optimize = trainer.apply_gradients(grads)
+grads = tf.Print(grads, [grads], 'Status:')
+
+grad_a = (1/N) * tf.matmul(Y-Y_,  X, transpose_a=True)
+grad_b = (1/N) * tf.reduce_sum(Y-Y_)
 
 sess = tf.Session()
 sess.run(tf.initialize_all_variables())
-
-Xs = np.array([1, 2])
-Ys = np.array([3, 5])
-
-
-for i in range(100):
-    val_loss, _, val_a, val_b = sess.run([loss, train_op, a, b],
-        feed_dict={X: [1,2], Y_: [3,5]})
-    print(i, val_loss, val_a, val_b)
-
-plt.plot(Xs, val_a * Xs + val_b)
 plt.scatter(Xs, Ys, marker='o')
+
+for i in range(1000):
+    val_loss, val_grads, val_grad_a, val_grad_b = sess.run([loss, grads, grad_a, grad_b], feed_dict={X: Xs, Y_: Ys})
+    _, val_a, val_b = sess.run([train_op, a, b], feed_dict={X: Xs, Y_: Ys})
+
+    if i% 100 == 0:
+        print(val_a, val_b, val_loss.sum())
+        print(val_grads)
+        print(val_grad_a, val_grad_b)
+
+plt.plot(Xs, val_a*Xs + val_b)
 plt.show()
