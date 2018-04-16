@@ -22,6 +22,7 @@ class Random2DGaussian:
         cov = R.transpose().dot(D).dot(R)
         self.get_sample = lambda n: np.random.multivariate_normal(mean, cov, n)
 
+
 def as_one_hot(C, Y):
     n = len(Y)
     Yoh = np.zeros((n, C))
@@ -50,6 +51,7 @@ def sample_gmm_2d(K, C, N, one_hot=False):
     if one_hot:
         return X, Y, as_one_hot(C, Y)
     return X, Y
+
 
 def eval_perf_binary(Y, Y_):
     tp = np.sum(np.logical_and(Y == Y_, Y_ == 1))
@@ -115,10 +117,10 @@ def graph_surface(fun, rect, offset=0.5, width=800, height=800):
 
     vals = fun(grid).reshape((width, height))
 
-    #delta = offset if offset else 0
-    #maxval = max(np.max(vals) - delta, -(np.min(vals) - delta))
+    # delta = offset if offset else 0
+    # maxval = max(np.max(vals) - delta, -(np.min(vals) - delta))
 
-    plt.pcolormesh(x0, x1, vals, #vmin=delta-maxval, vmax=delta+maxval,
+    plt.pcolormesh(x0, x1, vals,  # vmin=delta-maxval, vmax=delta+maxval,
                    cmap='jet')
 
     if offset is not None:
@@ -134,7 +136,7 @@ def confusion_matrix(Y, Y_):
     for i, Ci in Cs:
         for j, Cj in Cs:
             mat[i][j] = (pairs == (Ci, Cj)).all(axis=1).sum()
-    
+
     return mat
 
 
@@ -147,7 +149,9 @@ def plot_confusion_matrix(cm, classes):
 
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, cm[i, j], horizontalalignment="center", color="white" if cm[i, j] > thresh else "black")
+        plt.text(j, i, cm[i, j],
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
 
     plt.tight_layout()
     plt.ylabel('true')

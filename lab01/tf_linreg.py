@@ -21,7 +21,7 @@ trainer = tf.train.GradientDescentOptimizer(0.01)
 train_op = trainer.minimize(loss)
 grads = trainer.compute_gradients(loss, [a, b])
 optimize = trainer.apply_gradients(grads)
-grads = tf.Print(grads, [grads], 'Status:')
+grads = tf.Print(grads, [grads], 'grads: ')
 
 grad_a = (1/N) * tf.matmul(Y-Y_,  X, transpose_a=True)
 grad_b = (1/N) * tf.reduce_sum(Y-Y_)
